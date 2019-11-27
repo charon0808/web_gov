@@ -51,11 +51,25 @@ def write_table_content(request):
         :param request:
         :return:
         """
-    done = True
-    if done:
-        return HttpResponse("1")
-    else:
-        return HttpResponse("0")
+
+    if request.method == 'POST':
+        file_obj = request.FILES.get('file', None)
+        print(file_obj.name)
+        print(file_obj.size)
+        with open('database/static/files/' + file_obj.name, 'wb') as f:
+            for line in file_obj.chunks():
+                f.write(line)
+        f.close()
+
+        # 收到的文件存在了files下面。接下来就是入库解析，
+
+
+
+
+        data = dict()
+        data['status'] = 1
+        return HttpResponse(json.dumps(data), content_type='application/json')
+
 
 
 def update_table_content(request):

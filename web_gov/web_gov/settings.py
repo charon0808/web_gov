@@ -125,6 +125,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "static"),
+    os.path.join(BASE_DIR, "database/static"),
     # '/path/to/others/static/',  # 用不到的时候可以不写这一行
 )
 STATICFILES_FINDERS = (

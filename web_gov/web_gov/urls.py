@@ -21,7 +21,9 @@ from . import views
 
 
 urlpatterns = [
+
     path('db/', include('database.urls')),
+    path('file_upload.html/upload', views.upload),
     path('login.html/index.html/', views.login_user),
     path('', views.hello),
     path('<str:name>/', views.hello),

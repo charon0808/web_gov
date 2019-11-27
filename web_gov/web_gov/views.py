@@ -2,6 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.shortcuts import redirect
 from django import forms
+import json
 
 
 def hello(request, name='index.html'):
@@ -9,11 +10,11 @@ def hello(request, name='index.html'):
     print(name)
     htmls = ['calendar.html', 'chart.html', 'file-manager.html', 'form.html', 'gallery.html', 'icon.html', 'index.html',
              'login.html', 'messages.html', 'submenu.html''submenu2.html', 'submenu3.html', 'table.html', 'tasks.html',
-             'typography.html', 'ui.html', 'widgets.html']
+             'typography.html', 'ui.html', 'widgets.html', 'file_upload.html', '404.html']
     if name in htmls:
         return render(request, name)
     else:
-        return render(request, '404')
+        return render(request, '404.html')
 
 
 def check_login(func):  # 自定义登录验证装饰器
@@ -50,3 +51,19 @@ def login_user(request):
     else:
         form = LoginForm()
     return render(request, 'login.html')
+
+
+def upload(request):
+    if request.method == 'POST':
+        file_obj = request.FILES.get('file', None)
+        print(file_obj.name)
+        print(file_obj.size)
+        with open('static/media/' + file_obj.name, 'wb') as f:
+            for line in file_obj.chunks():
+                f.write(line)
+        f.close()
+
+        data = dict()
+        data['status'] = 1
+        return HttpResponse(json.dumps(data), content_type='application/json')
+
