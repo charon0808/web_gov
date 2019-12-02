@@ -15,7 +15,7 @@ def get_all_table_names(request):
         'names':['name1', 'name2'], # 一个list
     }
     """
-    data = dict()
+    data = dict({'num': 10, 'names': ['table1', 'table2']})
     return HttpResponse(json.dumps(data), content_type='application/json')
 
 
@@ -32,8 +32,23 @@ def get_table_sample(request):
     :param request:
     :return:
     """
-
     data = dict()
+    if request.method == 'GET':
+        print(request.GET)
+        classid = request.GET["classid"]
+        if classid == 'table2':
+            data = [
+                ['姓名', '年龄', '身高', '体重'],
+                ['1', '2', '3', '4'],
+                ['4', '6', '7', '9']
+            ]
+        else:
+            data = [
+                ['学校', '城市', '专业', '国家'],
+                ['1', '2', '3', '4'],
+                ['4', '6', '7', '9']
+            ]
+
     return HttpResponse(json.dumps(data), content_type='application/json')
 
 
