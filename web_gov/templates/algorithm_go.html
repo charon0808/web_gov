@@ -391,7 +391,7 @@
        function search(){
         $.ajax({
             type: "POST",
-            url:'/run',
+            url:'/alg/run/',
             data:$("#form1").serialize(),
             dataType: "json",
             success: function (data) {
@@ -475,7 +475,7 @@
         $.ajax({
             type: "GET",
             dataType: "json",
-            url: '/get_all_algorithm_names',
+            url: '/alg/get_all_algorithm_names',
             success: function (data) {
                 //console.log(data);
                 console.log(data['names']);

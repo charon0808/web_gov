@@ -23,8 +23,8 @@ from . import views
 urlpatterns = [
 
     path('db/', include('database.urls')),
+    path('alg/', include('algorithm.urls')),
     path('run', views.run),
-    path('get_all_algorithm_names', views.algorithm_names),
     path('file_upload.html/upload', views.upload),
     path('login.html/index.html/', views.login_user),
     path('admin/', admin.site.urls),

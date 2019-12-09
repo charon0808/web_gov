@@ -461,6 +461,7 @@
                     console.log(data['names'][i]);
                     $("select[name=classid]").append("<option value=\'" + data['names'][i] + "\'>" + data['names'][i] + "</option>");
                 }
+                search();
             },
             error: function (e) {
                 console.log(e);
