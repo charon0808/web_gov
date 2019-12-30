@@ -355,7 +355,7 @@
 							<ul>
 								<li><a class="submenu" href="/algorithm_preview.html"><i class="icon-file-alt"></i><span class="hidden-tablet">算法库概览</span></a></li>
 								<li><a class="submenu" href="/algorithm_go.html"><i class="icon-file-alt"></i><span class="hidden-tablet">算法运行</span></a></li>
-                                <li><a class="submenu" href="/data_preview.html"><i class="icon-file-alt"></i><span class="hidden-tablet">运行管理</span></a></li>
+                                <li><a class="submenu" href="/run_manage.html"><i class="icon-file-alt"></i><span class="hidden-tablet">运行管理</span></a></li>
 							</ul>
 						</li>
 
@@ -395,29 +395,8 @@
             data:$("#form1").serialize(),
             dataType: "json",
             success: function (data) {
-                 $("#table").empty();
-                console.log(data);
-                var height = data.length;
-                var width = data[0].length;
-                var s = "<tr class=\"TABLE_TH\">";
-                for(var j =0;j<width;j++){
-                    s+= "<th>"+data[0][j]+"</th>";
-                }
-                s+="</tr>";
-                $("#table").append(s);
-                for (var i=1;i<height;i++){
-                    if (i%2==1){
-                          s="<tr align=\"left\" class=\"TABLE_TR_01\">";
-                  }
-                    else{
-                    s="<tr align=\"left\" class=\"TABLE_TR_02\">";
-                    }
-                    for(var j=0;j<width;j++){
-                     s+= "<td valign=\"middle\">"+data[i][j]+"</td>";
-                    }
-                    s+="</tr>";
-                    $("#table").append(s);
-                }
+                    alert("你好，您的请求已经被接受");
+
               },
             error: function () {
             }

@@ -387,95 +387,53 @@
 
 
 <link href="{%   static "css/table.css"%}" rel="stylesheet" type="text/css">
-<script type="text/javascript" >
-       function get(){
-        $.ajax({
-            type: "POST",
-            url:'/run',
-            data:$("#form1").serialize(),
-            dataType: "json",
-            success: function (data) {
-                 $("#table").empty();
-                console.log(data);
-                var height = data.length;
-                var width = data[0].length;
-                var s = "<tr class=\"TABLE_TH\">";
-                for(var j =0;j<width;j++){
-                    s+= "<th>"+data[0][j]+"</th>";
-                }
-                s+="</tr>";
-                $("#table").append(s);
-                for (var i=1;i<height;i++){
-                    if (i%2==1){
-                          s="<tr align=\"left\" class=\"TABLE_TR_01\">";
-                  }
-                    else{
-                    s="<tr align=\"left\" class=\"TABLE_TR_02\">";
-                    }
-                    for(var j=0;j<width;j++){
-                     s+= "<td valign=\"middle\">"+data[i][j]+"</td>";
-                    }
-                    s+="</tr>";
-                    $("#table").append(s);
-                }
-              },
-            error: function () {
-            }
-        })
-    };
-</script>
-<div class="search radius6">
-    <form name="searchform" id="form1"  οnsubmit="return false" action="##" method="post">
-        {% csrf_token %}
-        <input name='ecmsfrom' type='hidden' value='9'>
-        <input type="hidden" name="show" value="title,newstext">
+                <div>
+    <table width="95%" id="table2" class="TABLE_BODY" bordercolor="#777777" border="1" style="border-color:#777777;border-collapse:collapse">
 
-        <select name="classid2" id="choose3" onchange="get()">
-        </select>
+        <tr class="TABLE_TH">
+    <th>dataset</th>
+     <th>algorithm</th>
+     <th>create_time</th>
+    </tr><tr class="TABLE_TR_01">
+        <td>{{ dataset }}</td>
+         <td>{{ algorithm }}</td>
+         <td>{{ create_time }}</td>
+    </tr>
+    </table>
 
-    </form>
 </div>
+                <div>算法在训练集的准确率，召回率，f1-score:</div>
 <div>
     <table width="95%" id="table" class="TABLE_BODY" bordercolor="#777777" border="1" style="border-color:#777777;border-collapse:collapse">
 
+        <tr class="TABLE_TH">
+    <th>precision_score</th>
+     <th>recall_score</th>
+     <th>f1_score</th>
+    </tr><tr class="TABLE_TR_01">
+        <td>{{ pre }}</td>
+         <td>{{ recall }}</td>
+         <td>{{ f1 }}</td>
+    </tr>
     </table>
 </div>
+
+         <div></div>
+
+
+   <img src= '/media/{{ create_time }}.png'  />
+
 <script type="text/javascript" src="{% static 'js/jquery-1.8.3.min.js' %}"></script>
 
 <script>
 //ajax提交信息
 
-     function requestalgo() {
-        $("select[name=modelId]").empty();
-        $.ajax({
-            type: "GET",
-            dataType: "json",
-            url: '/alg/get_all_algorithm_names',
-            success: function (data) {
-                //console.log(data);
-                console.log(data['names']);
-                console.log(data['names'].length);
-                //shift = series.data.length > 200; // 当数据点数量超过 20 个，则指定删除第一个点
-                // 新增点操作
-                //具体的参数详见：https://api.hcharts.cn/highcharts#Series.addPoint
-                for (var i = 0; i < data['names'].length; i++) {
-                    console.log(data['names'][i]);
-                    $("select[name=classid2]").append("<option value=\'" + data['names'][i] + "\'>" + data['names'][i] + "</option>");
-                }
-            },
-            error: function (e) {
-                console.log(e);
-            },
-            cache: false
-        });
-    };
+
     $(document).ready(function () {
 
-        requestalgo()
-    })
+    });
 
 </script>
-
 
 
 

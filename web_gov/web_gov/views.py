@@ -15,19 +15,13 @@ def hello(request, name='index.html'):
     htmls = ['calendar.html', 'chart.html', 'file-manager.html', 'form.html', 'gallery.html', 'icon.html', 'index.html',
              'login.html', 'messages.html', 'submenu.html''submenu2.html', 'submenu3.html', 'table.html', 'tasks.html',
              'typography.html', 'ui.html', 'widgets.html', 'file_upload.html', '404.html', 'data_preview.html', 'algorithm_preview.html',
+             "run_manage.html",
              "algorithm_go.html"]
+    print(name, "=====================================================")
     if name in htmls:
         return render(request, name)
     else:
         return render(request, '404.html')
-
-
-
-
-@check_login
-def run(request):
-    print(request.POST)
-    return HttpResponse('ok')
 
 
 def login_user(request):
@@ -35,6 +29,7 @@ def login_user(request):
     if request.method == 'POST':
         print(request.POST)
         all_data = request.POST
+        print(all_data)
         exist = User.objects.filter(username=all_data['username'], password=all_data['password']).first()
         print('EXIST', exist)
         if exist:
@@ -43,15 +38,17 @@ def login_user(request):
             return redirect('/index.html')
         else:
             return HttpResponse("账户或密码错误")
-    return render(request, 'login.html')
+    else:
+        return render(request, 'login.html')
 
 
+@check_login
 def upload(request):
     if request.method == 'POST':
         file_obj = request.FILES.get('file', None)
         print(file_obj.name)
         print(file_obj.size)
-        with open('static/media/' + file_obj.name, 'wb') as f:
+        with open('media/' + file_obj.name, 'wb') as f:
             for line in file_obj.chunks():
                 f.write(line)
         f.close()

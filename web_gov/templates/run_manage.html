@@ -387,15 +387,45 @@
 
 
 <link href="{%   static "css/table.css"%}" rel="stylesheet" type="text/css">
-<script type="text/javascript" >
-       function get(){
-        $.ajax({
-            type: "POST",
-            url:'/run',
-            data:$("#form1").serialize(),
-            dataType: "json",
+
+
+<div>
+    <table width="95%" id="table" class="TABLE_BODY" bordercolor="#777777" border="1" style="border-color:#777777;border-collapse:collapse">
+
+    </table>
+</div>
+<script type="text/javascript" src="{% static 'js/jquery-1.8.3.min.js' %}"></script>
+
+<script>
+//ajax提交信息
+
+    function  onClick(thi) {
+            var tim=$(thi).data("name");
+            $.ajax({
+            type: "GET",
+            dataType: "text",
+                data:{time:tim},
+            url: '/alg/show_details/',
+
             success: function (data) {
-                 $("#table").empty();
+
+            },
+            error: function (e) {
+                console.log(e);
+            },
+            cache: false
+        });
+    };
+    function request_jobs() {
+        re();
+        setInterval(re,50000);
+        function re(){
+            $("#table").empty();
+        $.ajax({
+            type: "GET",
+            dataType: "json",
+            url: '/alg/get_all_jobs/',
+            success: function (data) {
                 console.log(data);
                 var height = data.length;
                 var width = data[0].length;
@@ -403,6 +433,7 @@
                 for(var j =0;j<width;j++){
                     s+= "<th>"+data[0][j]+"</th>";
                 }
+                s+='<th></th>';
                 s+="</tr>";
                 $("#table").append(s);
                 for (var i=1;i<height;i++){
@@ -415,52 +446,10 @@
                     for(var j=0;j<width;j++){
                      s+= "<td valign=\"middle\">"+data[i][j]+"</td>";
                     }
+                    s+='<td><button data-name =\"'+ data[i][width-1]+'\" onclick=\"window.location.href=\'/alg/show_details/?time='+data[i][width-1] +'\'\">查看详情</button></td>';
                     s+="</tr>";
+
                     $("#table").append(s);
-                }
-              },
-            error: function () {
-            }
-        })
-    };
-</script>
-<div class="search radius6">
-    <form name="searchform" id="form1"  οnsubmit="return false" action="##" method="post">
-        {% csrf_token %}
-        <input name='ecmsfrom' type='hidden' value='9'>
-        <input type="hidden" name="show" value="title,newstext">
-
-        <select name="classid2" id="choose3" onchange="get()">
-        </select>
-
-    </form>
-</div>
-<div>
-    <table width="95%" id="table" class="TABLE_BODY" bordercolor="#777777" border="1" style="border-color:#777777;border-collapse:collapse">
-
-    </table>
-</div>
-<script type="text/javascript" src="{% static 'js/jquery-1.8.3.min.js' %}"></script>
-
-<script>
-//ajax提交信息
-
-     function requestalgo() {
-        $("select[name=modelId]").empty();
-        $.ajax({
-            type: "GET",
-            dataType: "json",
-            url: '/alg/get_all_algorithm_names',
-            success: function (data) {
-                //console.log(data);
-                console.log(data['names']);
-                console.log(data['names'].length);
-                //shift = series.data.length > 200; // 当数据点数量超过 20 个，则指定删除第一个点
-                // 新增点操作
-                //具体的参数详见：https://api.hcharts.cn/highcharts#Series.addPoint
-                for (var i = 0; i < data['names'].length; i++) {
-                    console.log(data['names'][i]);
-                    $("select[name=classid2]").append("<option value=\'" + data['names'][i] + "\'>" + data['names'][i] + "</option>");
                 }
             },
             error: function (e) {
@@ -468,14 +457,14 @@
             },
             cache: false
         });
+        }
     };
     $(document).ready(function () {
+        request_jobs()
 
-        requestalgo()
-    })
+    });
 
 </script>
-
 
 
 

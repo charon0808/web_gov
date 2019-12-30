@@ -16,7 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, re_path,include
 from django.conf.urls import url
-
+from django.conf.urls.static import static
+from django.conf import settings
 from . import views
 
 
@@ -24,13 +25,13 @@ urlpatterns = [
 
     path('db/', include('database.urls')),
     path('alg/', include('algorithm.urls')),
-    path('run', views.run),
     path('file_upload.html/upload', views.upload),
-    path('login.html/index.html/', views.login_user),
+    path('login.html/', views.login_user),
+    path('login.html/login', views.login_user),
     path('admin/', admin.site.urls),
     path('', views.hello),
     path('<str:name>/', views.hello),
 
 
-]
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
