@@ -84,10 +84,21 @@ def LOF(dataset, index):
     job.status = 50
     job.save()
     data = get_table_content(dataset)
+    target = None if isinstance(data[0][-1], str) else list(
+        map(lambda x: x[-1], data))
     model = LocalOutlierFactor(n_neighbors=10, contamination=0.05)
     data = [d[:-1] for d in data]
     pred = model.fit_predict(data)
     pred[pred == -1] = 0
+    if target is None:
+        p, r, f1 = scores(targe, pred)
+    else:
+        p, r, f1 = 0, 0, 0
+    filename = str(index).replace(" ", "_").replace(":", "_")
+    with open(filename, 'w') as f:
+        f.write(str(p) + "," + str(r) + "," + str(f1) + '\n')
+        f.write(str(dataset) + "," + "LOF" + "," + str(index))
+        f.close()
     fig = tsne.tsne(data, pred + 1)
     fig.savefig('media/' + str(index) + '.png')
     job = Running.objects.get(create_time=index)
@@ -101,6 +112,8 @@ def LOOP(dataset, index):
     job.save()
     data = get_table_content(dataset)
     data = list(map(lambda x: list(map(float, x[:-1])), data))
+    target = None if isinstance(data[0][-1], str) else list(
+        map(lambda x: x[-1], data))
     data = numpy.array(data)
     train_set = loop.LocalOutlierProbability(data, n_neighbors=3).fit()
     train_scores = train_set.local_outlier_probabilities
@@ -108,8 +121,18 @@ def LOOP(dataset, index):
     job.status = 50
     job.save()
     threshold = 0.3
-    pred = list(map(lambda x: 2 if x < threshold else 1, train_scores))
-    fig = tsne.tsne(data, numpy.array(pred))
+    pred = list(map(lambda x: 1 if x < threshold else 0, train_scores))
+    print(pred)
+    if target is None:
+        p, r, f1 = scores(target, pred)
+    else:
+        p, r, f1 = 0, 0, 0
+    filename = str(index).replace(" ", "_").replace(":", "_")
+    with open(filename, 'w') as f:
+        f.write(str(p) + "," + str(r) + "," + str(f1) + '\n')
+        f.write(str(dataset) + "," + "LOOP" + "," + str(index))
+        f.close()
+    fig = tsne.tsne(data, numpy.array(pred) + 1)
     fig.savefig('media/' + str(index) + '.png')
     job = Running.objects.get(create_time=index)
     job.status = 100
