@@ -390,6 +390,7 @@
 <script type="text/javascript" >
 	function get_algorithm_detail(){
 		var options=$("#choose3 option:selected");
+		console.log(options.value)
 		if (options.value=="LOF"){
 			return "https://en.wikipedia.org/wiki/Local_outlier_factor";
 		}
@@ -400,40 +401,8 @@
 
        function get(){
 		var frame_addr=get_algorithm_detail();
+		console.log(frame_addr)
 		document.getElementById('frame_al').src = frame_addr;
-        $.ajax({
-            type: "POST",
-            url:'/run',
-            data:$("#form1").serialize(),
-            dataType: "json",
-            success: function (data) {
-                 $("#table").empty();
-                console.log(data);
-                var height = data.length;
-                var width = data[0].length;
-                var s = "<tr class=\"TABLE_TH\">";
-                for(var j =0;j<width;j++){
-                    s+= "<th>"+data[0][j]+"</th>";
-                }
-                s+="</tr>";
-                $("#table").append(s);
-                for (var i=1;i<height;i++){
-                    if (i%2==1){
-                          s="<tr align=\"left\" class=\"TABLE_TR_01\">";
-                  }
-                    else{
-                    s="<tr align=\"left\" class=\"TABLE_TR_02\">";
-                    }
-                    for(var j=0;j<width;j++){
-                     s+= "<td valign=\"middle\">"+data[i][j]+"</td>";
-                    }
-                    s+="</tr>";
-                    $("#table").append(s);
-                }
-              },
-            error: function () {
-            }
-        })
     };
 </script>
 <div class="search radius6">
