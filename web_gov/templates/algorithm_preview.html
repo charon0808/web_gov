@@ -388,7 +388,19 @@
 
 <link href="{%   static "css/table.css"%}" rel="stylesheet" type="text/css">
 <script type="text/javascript" >
+	function get_algorithm_detail(){
+		var options=$("#choose3 option:selected");
+		if (options.value=="LOF"){
+			return "https://en.wikipedia.org/wiki/Local_outlier_factor";
+		}
+		else if (options.value=="LOOP"){
+			return "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.439.2035&rep=rep1&type=pdf";
+		}
+	};
+
        function get(){
+		var frame_addr=get_algorithm_detail();
+		document.getElementById('frame_al').src = frame_addr;
         $.ajax({
             type: "POST",
             url:'/run',
@@ -433,7 +445,14 @@
         <select name="classid2" id="choose3" onchange="get()">
         </select>
 
-    </form>
+	</form>
+	<div id="tab_1">
+		<iframe src= "https://en.wikipedia.org/wiki/Local_outlier_factor"
+				height="1000"
+				width=100%
+				id="frame_al"
+		></iframe>
+	</div>
 </div>
 <div>
     <table width="95%" id="table" class="TABLE_BODY" bordercolor="#777777" border="1" style="border-color:#777777;border-collapse:collapse">

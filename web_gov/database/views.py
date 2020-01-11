@@ -10,6 +10,10 @@ import time
 在这个文件中，实现的是关于数据库的操作，
 """
 
+MYSQL_HOST = '127.0.0.1'
+MYSQL_USER = 'root'
+MYSQL_PASSWORD = 'password'
+
 
 @check_login
 def get_all_table_names(request):
@@ -20,7 +24,8 @@ def get_all_table_names(request):
         'names':['name1', 'name2'], # 一个list
     }
     """
-    db = pymysql.connect(host='127.0.0.1', user='root', passwd='131010lL')
+    db = pymysql.connect(
+        host=MYSQL_HOST, user=MYSQL_USER, passwd=MYSQL_PASSWORD)
     curosr = db.cursor()
     SQL1 = "USE njudata;"
     curosr.execute(SQL1)
@@ -39,7 +44,8 @@ def file_to_db(name):
     print(filename, extension)
     if extension in ['.data', '.csv', '.db']:
         if extension == '.data':
-            db = pymysql.connect(host='127.0.0.1', user='root', passwd='131010lL')
+            db = pymysql.connect(
+                host=MYSQL_HOST, user=MYSQL_USER, passwd=MYSQL_PASSWORD)
             curosr = db.cursor()
             SQL1 = "USE njudata;"
             curosr.execute(SQL1)
@@ -48,8 +54,10 @@ def file_to_db(name):
                 for line in f.readlines():
                     lens = len(line.strip().split(","))
                     SQL_creat_table = "CREATE TABLE " + filename
-                    SQL_creat_table += " (" + ",".join(
-                        ["col" + str(i) + " varchar(100)" for i in range(1, lens + 1)]) + ");"
+                    SQL_creat_table += " (" + ",".join([
+                        "col" + str(i) + " varchar(100)"
+                        for i in range(1, lens + 1)
+                    ]) + ");"
                     curosr.execute(SQL_creat_table)
                     db.commit()
                     break
@@ -84,7 +92,8 @@ def get_table_sample(request):
     if request.method == 'GET':
         print("获取数据", request.GET)
         classid = request.GET["classid"]
-        db = pymysql.connect(host='127.0.0.1', user='root', passwd='131010lL')
+        db = pymysql.connect(
+            host=MYSQL_HOST, user=MYSQL_USER, passwd=MYSQL_PASSWORD)
         curosr = db.cursor()
         SQL1 = "USE njudata;"
         curosr.execute(SQL1)
@@ -99,7 +108,8 @@ def get_table_sample(request):
             curosr.execute(SQL3)
             d = curosr.fetchall()
             data = [list(s) for s in d]
-            return HttpResponse(json.dumps(data), content_type='application/json')
+            return HttpResponse(
+                json.dumps(data), content_type='application/json')
 
 
 def get_table_content(name):
@@ -115,7 +125,8 @@ def get_table_content(name):
     :param request:
     :return:
     """
-    db = pymysql.connect(host='127.0.0.1', user='root', passwd='131010lL')
+    db = pymysql.connect(
+        host=MYSQL_HOST, user=MYSQL_USER, passwd=MYSQL_PASSWORD)
     curosr = db.cursor()
     SQL1 = "USE njudata;"
     curosr.execute(SQL1)
@@ -150,12 +161,13 @@ def write_table_content(request):
                 for line in file_obj.chunks():
                     f.write(line)
             f.close()
-            p = Process(target=file_to_db, args=(file_obj.name,))
+            p = Process(target=file_to_db, args=(file_obj.name, ))
             p.start()
-        # 收到的文件存在了files下面。接下来就是入库解析，
+            # 收到的文件存在了files下面。接下来就是入库解析，
             data = dict()
             data['status'] = 1
-            return HttpResponse(json.dumps(data), content_type='application/json')
+            return HttpResponse(
+                json.dumps(data), content_type='application/json')
     except:
         data = dict()
         data['status'] = 1
@@ -170,4 +182,3 @@ def update_table_content(request):
     :return:
     """
     return HttpResponse("Hello world ! ")
-
