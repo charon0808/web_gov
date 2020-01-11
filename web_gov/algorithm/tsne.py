@@ -1,6 +1,8 @@
 """t-SNE 对手写数字进行可视化"""
 from time import time
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 from sklearn import datasets
