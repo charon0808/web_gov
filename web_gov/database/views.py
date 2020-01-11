@@ -12,7 +12,7 @@ import time
 
 MYSQL_HOST = '127.0.0.1'
 MYSQL_USER = 'root'
-MYSQL_PASSWORD = 'password'
+MYSQL_PASSWORD = '131010lL'
 
 
 @check_login

@@ -7,6 +7,7 @@ import os
 from login.views import check_login
 from multiprocessing import Process, Queue
 import time
+import sklearn
 from sklearn.neighbors import LocalOutlierFactor
 from sklearn.preprocessing import OneHotEncoder
 from sklearn import preprocessing
@@ -18,9 +19,9 @@ import os
 from django.shortcuts import render
 from algorithm import  tsne
 from algorithm.models import Running
-
 from sklearn import metrics
-
+from PyNomaly import loop
+from scipy.spatial.distance import pdist, squareform
 
 def scores(target, y):
     prec = metrics.precision_score(target, y)
@@ -28,45 +29,101 @@ def scores(target, y):
     f1 = metrics.f1_score(target, y)
     return prec, recall, f1
 
+def dist(X):
+    sq_dists = pdist(X)
+    mat_sq_dists = squareform(sq_dists)
+    return mat_sq_dists
 
-def LOF(dataset, index):
-    data = get_table_content(dataset)
-    model = LocalOutlierFactor(n_neighbors=4, contamination=0.01,  novelty=True)
-    data = numpy.array(data)
+def c_dist(X):
+    length  =len(X)
+    dis = numpy.zeros((length,length))
+    for i in range(length-1):
+        for j in range(i+1,length):
+            dis[i,j]=dis[j,i] = sum(X[i]==X[j])
+    return dis
+
+def pre_data(database):
+    data = get_table_content(database)
+    head = data[0]
+    data = numpy.array(data[1:])
     h, w = data.shape
-    print(h, w)
     last_is_target = False
-    if dataset in ['num3', 'num_n']:
-        last_is_target = True
-    All = None
     target = None
+    if head[-1].split(':')[-1]=='T':
+        last_is_target = True
+    n_data = None
+    c_data = None
     for i in range(w):
         col = data[:, i]
-        try:
-            col = numpy.reshape(col.astype(numpy.float32), (-1, 1))
-        except:
-            le = preprocessing.LabelEncoder()
-            le.fit(list(set(col)))
-            col = le.transform(col)
-            col = numpy.reshape(col.astype(numpy.float32), (-1, 1))
-        if i == 0:
-            All = col
+        if head[i].split(':')[-1]=='C':
+            col = numpy.reshape(col, (-1, 1))
+            if c_data is None:
+                c_data = col
+            else:
+                c_data = numpy.concatenate((c_data, col), -1)
         else:
-            All = numpy.concatenate((All, col), -1)
+            col = numpy.reshape(col.astype(numpy.float32), (-1, 1))
+            col = sklearn.preprocessing.minmax_scale(col)
+            sklearn.preprocessing.scale(col, axis=0, with_mean=True,with_std=True,copy=True)  
+            if n_data is None:
+                n_data = col
+            else:
+                n_data = numpy.concatenate((n_data, col), -1)
     if last_is_target:
-        target =All[:, -1].astype(numpy.int32)
-        All = All[:, :-1]
-    model.fit(All)
+        target =n_data[:,-1].astype(numpy.int32)
+        n_data = n_data[:,:-1]
+    return n_data,c_data,target
+def LOOP(database,index):
+    n_data,c_data,target = pre_data(database)
     job = Running.objects.get(create_time=index)
     job.status = 50
     job.save()
-    y = model.predict(All)  # 若样本点正常，返回1，不正常，返回-1
+    m = loop.LocalOutlierProbability(n_data).fit()
+    score = m.local_outlier_probabilities
+    num = int(len(n_data)*0.1)
+    ind = numpy.argpartition(score, -num)[-num:]
+    y = numpy.ones(len(n_data))
+    y[ind] = 0
+    if target is not None:
+        p, r, f1 = scores(target, y)
+    else :
+        p,r,f1=0,0,0
+    with open(str(index), 'w') as f:
+        f.write(str(p)+","+str(r)+","+str(f1)+'\n')
+        f.write(str(database) + "," + "LOOP" + "," + str(index))
+    fig = tsne.tsne(n_data, y+1)
+    #fig2 = tsne.tsne(n_data, 1-target)
+    fig.savefig('media/'+str(index)+'.png')
+    job = Running.objects.get(create_time=index)
+    job.status = 100
+    job.save()
+
+def LOF(dataset, index):
+    data = get_table_content(dataset)
+    model = LocalOutlierFactor(n_neighbors=20,metric='precomputed', contamination=0.1,  novelty=False)
+    n_data,c_data,target = pre_data(dataset)
+    X = dist(n_data)
+    X_2 = c_dist(c_data)
+    X = sklearn.preprocessing.minmax_scale(X)
+    sklearn.preprocessing.scale(X, axis=0, with_mean=True,with_std=True,copy=True) 
+    X_2 = sklearn.preprocessing.minmax_scale(X_2)
+    sklearn.preprocessing.scale(X_2, axis=0, with_mean=True,with_std=True,copy=True)
+    alpha = 0
+    y = model.fit_predict(X+alpha*X_2)
     y[y == -1] = 0
-    p, r, f1 = scores(target, y)
+    job = Running.objects.get(create_time=index)
+    job.status = 50
+    job.save()
+    # 若样本点正常，返回1，不正常，返回-1
+    if target is not None:
+        p, r, f1 = scores(target, y)
+    else :
+        p,r,f1=0,0,0
     with open(str(index), 'w') as f:
         f.write(str(p)+","+str(r)+","+str(f1)+'\n')
         f.write(str(dataset) + "," + "LOF" + "," + str(index))
-    fig = tsne.tsne(All, y+1)
+    fig = tsne.tsne(n_data, y+1)
+    #fig2 = tsne.tsne(n_data, 1-target)
     fig.savefig('media/'+str(index)+'.png')
     job = Running.objects.get(create_time=index)
     job.status = 100
@@ -74,7 +131,8 @@ def LOF(dataset, index):
 
 
 algorithm_set = {
-    'LOF': LOF
+    'LOF': LOF,
+    'LOOP':LOOP
 }
 
 

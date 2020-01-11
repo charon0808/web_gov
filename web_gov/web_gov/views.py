@@ -16,7 +16,7 @@ def hello(request, name='index.html'):
              'login.html', 'messages.html', 'submenu.html''submenu2.html', 'submenu3.html', 'table.html', 'tasks.html',
              'typography.html', 'ui.html', 'widgets.html', 'file_upload.html', '404.html', 'data_preview.html', 'algorithm_preview.html',
              "run_manage.html",
-             "algorithm_go.html"]
+             "algorithm_go.html",'data.html']
     print(name, "=====================================================")
     if name in htmls:
         return render(request, name)
