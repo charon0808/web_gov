@@ -10,7 +10,7 @@ import time
 from sklearn.neighbors import LocalOutlierFactor
 from sklearn.preprocessing import OneHotEncoder
 from sklearn import preprocessing
-#from sklearn.neighbors import LocalOutlierFactor
+# from sklearn.neighbors import LocalOutlierFactor
 from database.views import get_table_content
 from sklearn.model_selection import train_test_split
 import numpy
@@ -20,6 +20,7 @@ from algorithm import tsne
 from algorithm.models import Running
 from PyNomaly import loop
 import pandas as pd
+import copy
 
 from sklearn import metrics
 
@@ -34,70 +35,34 @@ def scores(target, y):
 
 
 def LOF(dataset, index):
-    data = get_table_content(dataset)
-    model = LocalOutlierFactor(n_neighbors=20, contamination=0.01)
-    data = numpy.array(data)
-    h, w = data.shape
-    print(h, w)
-    last_is_target = False
-    if dataset in ['num3', 'num_n']:
-        last_is_target = True
-    All = None
-    target = None
-    for i in range(w):
-        col = data[:, i]
-        try:
-            col = numpy.reshape(col.astype(numpy.float32), (-1, 1))
-        except:
-            le = preprocessing.LabelEncoder()
-            le.fit(list(set(col)))
-            col = le.transform(col)
-            col = numpy.reshape(col.astype(numpy.float32), (-1, 1))
-        if i == 0:
-            All = col
-        else:
-            All = numpy.concatenate((All, col), -1)
-    if last_is_target:
-        target = All[:, -1].astype(numpy.int32)
-        All = All[:, :-1]
-    model.fit(All)
-    job = Running.objects.get(create_time=index)
-    job.status = 50
-    job.save()
-    y = model.predict(All)  # 若样本点正常，返回1，不正常，返回-1
-    y[y == -1] = 0
-    p, r, f1 = scores(target, y)
-    filename = str(index).replace(" ", "_").replace(":", "_")
-    print(filename, end="\n\n\n")
-    with open(filename, 'w') as f:
-        f.write(str(p) + "," + str(r) + "," + str(f1) + '\n')
-        f.write(str(dataset) + "," + "LOF" + "," + str(index))
-    fig = tsne.tsne(All, y + 1)
-    fig.savefig('media/' + str(index) + '.png')
-    job = Running.objects.get(create_time=index)
-    job.status = 100
-    job.save()
-
-
-def LOF(dataset, index):
     job = Running.objects.get(create_time=index)
     job.status = 50
     job.save()
     data = get_table_content(dataset)
-    target = None if isinstance(data[0][-1], str) else list(
+    data_ori = copy.deepcopy(data)
+    target = None if isinstance(data[0][-1], str) or dataset == "gov" else list(
         map(lambda x: x[-1], data))
-    model = LocalOutlierFactor(n_neighbors=10, contamination=0.05)
-    data = [d[:-1] for d in data]
+    model = LocalOutlierFactor(n_neighbors=20, contamination=0.05)
+    data = [list(map(lambda x: float(x), d[:-1])) for d in data]
     pred = model.fit_predict(data)
     pred[pred == -1] = 0
-    if target is None:
-        p, r, f1 = scores(targe, pred)
+    if not target is None:
+        try:
+            p, r, f1 = scores(target, pred)
+        except Exception as e:
+            p, r, f1 = 0, 0, 0
     else:
         p, r, f1 = 0, 0, 0
     filename = str(index).replace(" ", "_").replace(":", "_")
+    out_pred_ID = []
+    for i in range(len(pred)):
+        if pred[i] == 0:
+            out_pred_ID.append(data_ori[i][-1])
+    print(str(out_pred_ID))
     with open(filename, 'w') as f:
         f.write(str(p) + "," + str(r) + "," + str(f1) + '\n')
-        f.write(str(dataset) + "," + "LOF" + "," + str(index))
+        f.write(str(dataset) + "," + "LOF" + "," + str(index) + '\n')
+        f.write(",".join(out_pred_ID))
         f.close()
     fig = tsne.tsne(data, pred + 1)
     fig.savefig('media/' + str(index) + '.png')
@@ -111,28 +76,36 @@ def LOOP(dataset, index):
     job.status = 10
     job.save()
     data = get_table_content(dataset)
+    data_ori = copy.deepcopy(data)
     data = list(map(lambda x: list(map(float, x[:-1])), data))
-    target = None if isinstance(data[0][-1], str) else list(
+    _data = copy.deepcopy(data)
+    target = None if isinstance(data[0][-1], str) or dataset == "gov" else list(
         map(lambda x: x[-1], data))
     data = numpy.array(data)
-    train_set = loop.LocalOutlierProbability(data, n_neighbors=3).fit()
+    train_set = loop.LocalOutlierProbability(data, n_neighbors=20).fit()
     train_scores = train_set.local_outlier_probabilities
     job = Running.objects.get(create_time=index)
     job.status = 50
     job.save()
-    threshold = 0.3
+    threshold = 0.15
     pred = list(map(lambda x: 1 if x < threshold else 0, train_scores))
-    print(pred)
-    if target is None:
+    # print(pred)
+    if not target is None:
         p, r, f1 = scores(target, pred)
     else:
         p, r, f1 = 0, 0, 0
     filename = str(index).replace(" ", "_").replace(":", "_")
+    out_pred_ID = []
+    for i in range(len(pred)):
+        if pred[i] == 0:
+            out_pred_ID.append(data_ori[i][-1])
+    print(str(out_pred_ID))
     with open(filename, 'w') as f:
         f.write(str(p) + "," + str(r) + "," + str(f1) + '\n')
-        f.write(str(dataset) + "," + "LOOP" + "," + str(index))
+        f.write(str(dataset) + "," + "LOOP" + "," + str(index) + '\n')
+        f.write(",".join(out_pred_ID))
         f.close()
-    fig = tsne.tsne(data, numpy.array(pred) + 1)
+    fig = tsne.tsne(_data, numpy.array(pred) + 1)
     fig.savefig('media/' + str(index) + '.png')
     job = Running.objects.get(create_time=index)
     job.status = 100
@@ -196,7 +169,10 @@ def show_details(request):
         context['dataset'] = s[0]
         context['algorithm'] = s[1]
         context['create_time'] = s[2]
-    #data = dict()
+        if len(lines) > 2:
+            s = lines[2].strip().split(',')
+            context['outlier_ID'] = "\t".join(s)
+    # data = dict()
     print(context)
     return render(request, "result_details.html", context=context)
-    #return HttpResponse(json.dumps(data), content_type='application/json')
+    # return HttpResponse(json.dumps(data), content_type='application/json')

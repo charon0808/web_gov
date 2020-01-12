@@ -6,6 +6,8 @@ import os
 from login.views import check_login
 from multiprocessing import Process
 import time
+import numpy as np
+
 """
 在这个文件中，实现的是关于数据库的操作，
 """
@@ -39,7 +41,38 @@ def get_all_table_names(request):
     return HttpResponse(json.dumps(data), content_type='application/json')
 
 
+def process_gov_dataset(name):
+    dataset_file = open('database/static/files/' + name, "r", encoding='utf-8')
+    _lines = dataset_file.read().split("\n")
+    first_line = _lines[0].split(",")
+    lines = list(map(lambda x: x.split(","), _lines[1:]))
+    dataset_file.close()
+    dataset_file = open('database/static/files/' + name, "w", encoding='utf-8')
+    row, col = np.array(lines).shape
+    new_lines = np.empty([row, col], dtype=int)
+    for i in range(col):
+        if i == 0:
+            for j in range(row):
+                new_lines[j][col - 1] = lines[j][i]
+            continue
+        count = []
+        for j in range(row):
+            if not lines[j][i] in count:
+                count.append(lines[j][i])
+            # print(count)
+            # print(np.where(np.array(count) == lines[j][i])[0][0])
+            new_lines[j][i - 1] = str(np.where(np.array(count) == lines[j][i])[0][0])
+    # dataset_file.write(",".join(first_line[1:]) + "," + first_line[0] + ",\n")
+    for line in new_lines:
+        #print(line)
+        dataset_file.write(",".join(list(map(lambda x: str(x), line))) + "\n")
+    dataset_file.flush()
+    dataset_file.close()
+
+
 def file_to_db(name):
+    if name == "gov.data":
+        process_gov_dataset(name)
     (filename, extension) = os.path.splitext(name)
     print(filename, extension)
     if extension in ['.data', '.csv', '.db']:
@@ -161,7 +194,7 @@ def write_table_content(request):
                 for line in file_obj.chunks():
                     f.write(line)
             f.close()
-            p = Process(target=file_to_db, args=(file_obj.name, ))
+            p = Process(target=file_to_db, args=(file_obj.name,))
             p.start()
             # 收到的文件存在了files下面。接下来就是入库解析，
             data = dict()

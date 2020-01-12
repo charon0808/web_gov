@@ -390,12 +390,14 @@
 <script type="text/javascript" >
 	function get_algorithm_detail(){
 		var options=$("#choose3 option:selected");
-		if (options.value=="LOF"){
+		console.log("options= "+options.val())
+		if (options.val()=="LOF"){
 			return "https://en.wikipedia.org/wiki/Local_outlier_factor";
 		}
-		else if (options.value=="LOOP"){
+		else if (options.val()=="LOOP"){
 			return "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.439.2035&rep=rep1&type=pdf";
 		}
+		return "https://en.wikipedia.org/wiki/Local_outlier_factor";
 	};
 
        function get(){
